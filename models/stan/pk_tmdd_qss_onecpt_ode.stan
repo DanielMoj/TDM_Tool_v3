@@ -94,15 +94,15 @@ model {
     if (error_model == 1) {
       s = sigma_add;
     } else if (error_model == 2) {
-      s = sigma_prop * pred[n];
+      s = sigma_prop * fabs(pred[n]);
     } else if (error_model == 3) {
-      s = sqrt(square(sigma_add) + square(sigma_prop * pred[n]));
+      s = sqrt(square(sigma_add) + square(sigma_prop * fabs(pred[n])));
     } else if (error_model == 4) { // t-add
       s = sigma_add;
     } else if (error_model == 5) { // t-prop
-      s = sigma_prop * pred[n];
+      s = sigma_prop * fabs(pred[n]);
     } else { // mixture uses normal components
-      s = sqrt(square(sigma_add) + square(sigma_prop * pred[n]));
+      s = sqrt(square(sigma_add) + square(sigma_prop * fabs(pred[n])));
     }
 
     if (is_blq[n] == 1) {
