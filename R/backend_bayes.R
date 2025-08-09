@@ -35,7 +35,7 @@ neg_log_post_map <- function(par_log, obs, regimen, priors, model_type, error_mo
   -(ll + lp)
 }
 
-run_fit_laplace <- function(obs, regimen, priors, model_type, error_model, covariates, estimate_sigma, sigma_init, blq_lloq = NA_real_, is_blq = NULL) {
+run_fit_laplace <- function(obs, regimen, priors, model_type, error_model, covariates, estimate_sigma, sigma_init, blq_lloq = NA_real_, is_blq = NULL, creatinine_data = NULL) {
   validate_inputs_units(regimen, obs)
   th0 <- log(priors$theta) # Start bei prior-Mean
   sigma_add <- sigma_init[["add"]]; sigma_prop <- sigma_init[["prop"]]
