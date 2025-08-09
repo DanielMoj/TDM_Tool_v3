@@ -63,7 +63,9 @@ app_ui <- function() {
             uiOutput("drug_selector"),
             selectInput("model_type", "Modell", choices = c("1C","2C","3C","MM-1C","TMDD-QSS-1C"), selected = "1C"),
             selectInput("error_model", "Residualfehler", choices = c("additiv","proportional","kombiniert","t-additiv","t-proportional","mixture"), selected = "kombiniert"),
-            selectInput("backend", "Bayes-Backend", choices = c("Laplace (schnell)","Stan (voll Bayes)","Stan-ADVI (schnell)","JAGS (voll Bayes)"), 
+            selectInput("backend", "Bayes-Backend",
+                        choices = c("Laplace (schnell)","Stan (voll Bayes)","Stan-ADVI (schnell)","JAGS (voll Bayes)"),
+                        selected = "Laplace (schnell)"),
             conditionalPanel(
               condition = "input.backend && input.backend.indexOf('Stan') >= 0",
               hr(),
@@ -73,8 +75,7 @@ app_ui <- function() {
               numericInput("hmc_sampling", "Sampling-Iterationen", value = 1000, min = 100, step = 100),
               numericInput("hmc_adapt_delta", "adapt_delta", value = 0.9, min = 0.5, max = 0.999, step = 0.01),
               numericInput("hmc_max_treedepth", "max_treedepth", value = 12, min = 8, max = 15, step = 1)
-            )
-selected = "Laplace (schnell)"),
+            ),
             checkboxInput("use_cache", "Warm-Start/Cache aktivieren", value = TRUE),
             numericInput("stan_chains", "Stan Chains", value = 4, min = 1, step = 1),
             numericInput("stan_iter", "Stan Iter Sampling", value = 1000, min = 200, step = 100),
