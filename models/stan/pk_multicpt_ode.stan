@@ -107,7 +107,7 @@ model {
     } else if (error_model == 2) {
       s = fmax(1e-6, sigma_prop * fabs(pred[n]));
     } else if (error_model == 3) {
-      s = sqrt(fmax(1e-12, square(sigma_add) + square(sigma_prop * pred[n])));
+      s = sqrt(fmax(1e-12, square(sigma_add) + square(sigma_prop * fabs(pred[n]))));
     } else if (error_model == 4) { // t-add
       s = sigma_add;
     } else if (error_model == 5) { // t-prop
