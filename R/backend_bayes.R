@@ -50,7 +50,8 @@ run_fit_laplace <- function(obs, regimen, priors, model_type, error_model, covar
 
 
 run_fit_stan <- function(obs, regimen, priors, model_type, error_model, covariates,
-                         estimate_sigma, sigma_init, blq_lloq = NA_real_, is_blq = NULL) {
+                         estimate_sigma, sigma_init, blq_lloq = NA_real_, is_blq = NULL,
+                         creatinine_data = NULL) {
   # --- HMC Controls (from options or defaults) ---
   .hmc <- getOption("tdmx_hmc", default = list(
     chains = 4L, iter_warmup = 1000L, iter_sampling = 1000L,
@@ -59,7 +60,8 @@ run_fit_stan <- function(obs, regimen, priors, model_type, error_model, covariat
 
   if (!requireNamespace("cmdstanr", quietly = TRUE)) {
     warning("cmdstanr nicht verfügbar, fallback auf Laplace.")
-    return(run_fit_laplace(obs, regimen, priors, model_type, error_model, covariates, estimate_sigma, sigma_init, blq_lloq, is_blq))
+    return(run_fit_laplace(obs, regimen, priors, model_type, error_model, covariates,
+                           estimate_sigma, sigma_init, blq_lloq, is_blq, creatinine_data))
   }
   stan_file <- stan_file_for_model(model_type)
   data_list <- stan_data_list2(obs, regimen, priors, model_type, error_model, estimate_sigma, sigma_init, blq_lloq, is_blq)
@@ -142,10 +144,13 @@ run_fit_stan <- function(obs, regimen, priors, model_type, error_model, covariat
 }
 
 
-run_fit_stan_advi <- function(obs, regimen, priors, model_type, error_model, covariates, estimate_sigma, sigma_init, blq_lloq = NA_real_, is_blq = NULL) {
+run_fit_stan_advi <- function(obs, regimen, priors, model_type, error_model, covariates,
+                              estimate_sigma, sigma_init, blq_lloq = NA_real_, is_blq = NULL,
+                              creatinine_data = NULL) {
   if (!requireNamespace("cmdstanr", quietly = TRUE) && !requireNamespace("rstan", quietly = TRUE)) {
     warning("Stan-ADVI nicht verfügbar, fallback auf Laplace.")
-    return(run_fit_laplace(obs, regimen, priors, model_type, error_model, covariates, estimate_sigma, sigma_init, blq_lloq, is_blq))
+    return(run_fit_laplace(obs, regimen, priors, model_type, error_model, covariates,
+                           estimate_sigma, sigma_init, blq_lloq, is_blq, creatinine_data))
   }
   stan_file <- stan_file_for_model(model_type)
   data <- stan_data_list2(obs, regimen, priors, model_type, error_model, estimate_sigma, sigma_init, blq_lloq, is_blq)
@@ -243,12 +248,18 @@ run_fit <- function(obs, regimen, priors, model_type, error_model, covariates, b
   pri_adj <- tryCatch(adjust_priors_for_covariates(priors, covariates), error = function(e) priors)
   priors <- pri_adj
   res <- switch(backend,
-    "Laplace" = run_fit_laplace(obs, regimen, priors, model_type, error_model, covariates, estimate_sigma, sigma_init, blq_lloq, is_blq),
-    "Stan"    = run_fit_stan(obs, regimen, priors, model_type, error_model, covariates, estimate_sigma, sigma_init, blq_lloq, is_blq),
-    "JAGS"    = run_fit_jags2(obs, regimen, priors, model_type, error_model, covariates, estimate_sigma, sigma_init, blq_lloq, is_blq),
-    "Stan-ADVI" = run_fit_stan_advi(obs, regimen, priors, model_type, error_model, covariates, estimate_sigma, sigma_init, blq_lloq, is_blq),
-    "Stan-Pathfinder" = run_fit_stan_pathfinder(obs, regimen, priors, model_type, error_model, covariates, estimate_sigma, sigma_init, blq_lloq, is_blq),
-    run_fit_laplace(obs, regimen, priors, model_type, error_model, covariates, estimate_sigma, sigma_init)
+    "Laplace" = run_fit_laplace(obs, regimen, priors, model_type, error_model, covariates,
+                                estimate_sigma, sigma_init, blq_lloq, is_blq, creatinine_data),
+    "Stan"    = run_fit_stan(obs, regimen, priors, model_type, error_model, covariates,
+                              estimate_sigma, sigma_init, blq_lloq, is_blq, creatinine_data),
+    "JAGS"    = run_fit_jags2(obs, regimen, priors, model_type, error_model, covariates,
+                              estimate_sigma, sigma_init, blq_lloq, is_blq),
+    "Stan-ADVI" = run_fit_stan_advi(obs, regimen, priors, model_type, error_model, covariates,
+                                     estimate_sigma, sigma_init, blq_lloq, is_blq, creatinine_data),
+    "Stan-Pathfinder" = run_fit_stan_pathfinder(obs, regimen, priors, model_type, error_model, covariates,
+                                                estimate_sigma, sigma_init, blq_lloq, is_blq, creatinine_data),
+    run_fit_laplace(obs, regimen, priors, model_type, error_model, covariates,
+                    estimate_sigma, sigma_init, blq_lloq, is_blq, creatinine_data)
   )
   draws <- as.data.frame(res$draws)
   # Posterior-Zusammenfassung
@@ -295,10 +306,13 @@ fit_advi <- function(data_list, stan_file, seed = 1234, iter = 20000, output_sam
 }
 
 
-run_fit_stan_pathfinder <- function(obs, regimen, priors, model_type, error_model, covariates, estimate_sigma, sigma_init, blq_lloq = NA_real_, is_blq = NULL) {
+run_fit_stan_pathfinder <- function(obs, regimen, priors, model_type, error_model, covariates,
+                                    estimate_sigma, sigma_init, blq_lloq = NA_real_, is_blq = NULL,
+                                    creatinine_data = NULL) {
   if (!requireNamespace("cmdstanr", quietly = TRUE)) {
     warning("cmdstanr nicht verfügbar, fallback auf ADVI.")
-    return(run_fit_stan_advi(obs, regimen, priors, model_type, error_model, covariates, estimate_sigma, sigma_init, blq_lloq, is_blq))
+    return(run_fit_stan_advi(obs, regimen, priors, model_type, error_model, covariates,
+                             estimate_sigma, sigma_init, blq_lloq, is_blq, creatinine_data))
   }
   stan_file <- stan_file_for_model(model_type)
   data <- stan_data_list2(obs, regimen, priors, model_type, error_model, estimate_sigma, sigma_init, blq_lloq, is_blq)
