@@ -85,7 +85,7 @@ audit_event <- function(action, payload = list(), session = shiny::getDefaultRea
   on.exit(try(DBI::dbDisconnect(con), silent = TRUE))
   prev <- try(DBI::dbGetQuery(con, "SELECT hash FROM audit_log ORDER BY id DESC LIMIT 1"), silent = TRUE)
   prev_hash <- if (!inherits(prev, "try-error") && nrow(prev) > 0) prev$hash[1] else "GENESIS"
-  ts <- format(Sys.time(), tz = "UTC", usetz = True)
+  ts <- format(Sys.time(), tz = "UTC", usetz = TRUE)
   payload_json <- jsonlite::toJSON(entry$payload, auto_unbox = TRUE, null = "null")
   chain_input <- paste(prev_hash, ts, entry$actor, entry$action, payload_json, sep = "|")
   h <- digest::digest(chain_input, algo = "sha256")
